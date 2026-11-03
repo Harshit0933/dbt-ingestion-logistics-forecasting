@@ -29,6 +29,7 @@ jobs:
         with:
           workload_identity_provider: 'projects/101221995363/locations/global/workloadIdentityPools/github-actions-pool-v2/providers/github-provider-v2'
           service_account: '101221995363-compute@developer.gserviceaccount.com'
+          project_id: 'data-warehouse-513514'
 
       - name: Run dbt Build
         run: dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting
