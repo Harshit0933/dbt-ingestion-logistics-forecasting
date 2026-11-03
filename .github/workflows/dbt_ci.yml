@@ -30,6 +30,7 @@ jobs:
           workload_identity_provider: 'projects/101221995363/locations/global/workloadIdentityPools/github-actions-pool-v2/providers/github-provider-v2'
           service_account: '101221995363-compute@developer.gserviceaccount.com'
           project_id: 'data-warehouse-513514'
+          token_format: 'access_token'
       
       - name: Install dbt packages
         run: dbt deps --project-dir logistics_forecasting
