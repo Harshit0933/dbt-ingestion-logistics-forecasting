@@ -1,0 +1,13 @@
+version: 2
+
+exposures:
+  - name: demand_forecasting_xgboost
+    label: Demand Forecasting ML Engine
+    type: ml
+    maturity: high
+    owner:
+      name: Data Science Team
+      email: data-science@abc.com
+    description: "Python-based ML pipeline pulling features to predict weekly logistics demand across all zones."
+    depends_on:
+      - ref('fct_logistics_demand_features')

@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: fct_logistics_demand_features
+    description: "Master time-series feature store for logistics demand forecasting."
+    columns:
+      - name: target_date
+        description: "Continuous date spine (no gaps)."
+        tests:
+          - not_null
+      - name: zone_id
+        description: "Delivery zone identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__dim_zones')
+                field: zone_id
+      - name: total_orders
+        description: "Aggregated daily order volume. Coalesced to 0 for missing days."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+      - name: temperature_celsius
+        description: "Daily average temperature. Contains nulls for zones/dates lacking sensor data."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -30
+                max_value: 60
+      - name: precipitation_mm
+        description: "Daily rainfall in millimeters."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 500
+
+unit_tests:
+  - name: test_fct_demand_features_coalesces_nulls_to_zero
+    description: "Ensures days without transactions return 0 rather than null."
+    model: fct_logistics_demand_features
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('int_geo_date_spine')
+        rows:
+          - {target_date: '2023-10-01', zone_id: 'zone_A'}
+      - input: ref('stg_raw__transactions')
+        rows: [] 
+      - input: ref('stg_raw__weather_actuals')
+        rows:
+          - {target_date: '2023-10-01', zone_id: 'zone_A', temperature_celsius: 20, precipitation_mm: 0}
+    expect:
+      rows:
+        - {target_date: '2023-10-01', zone_id: 'zone_A', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, precipitation_mm: 0}

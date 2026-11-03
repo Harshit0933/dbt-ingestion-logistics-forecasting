@@ -1,0 +1,29 @@
+name: dbt Data Pipeline CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dbt-test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-bigquery==1.13.0
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Run dbt Build
+        run: dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting

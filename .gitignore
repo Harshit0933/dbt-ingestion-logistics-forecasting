@@ -1,0 +1,8 @@
+target/
+dbt_packages/
+logs/
+venv/
+.env
+profiles.yml
+*.pyc
+profiles.yml

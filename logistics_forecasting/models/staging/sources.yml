@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: raw_data
+    database: data-warehouse-513514
+    schema: raw
+    tables:
+      - name: transactions
+      - name: dim_zones
+      - name: weather_actuals
+      - name: logistics_demand
+      
