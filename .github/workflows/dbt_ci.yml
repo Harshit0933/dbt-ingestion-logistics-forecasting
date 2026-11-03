@@ -1,9 +1,13 @@
 name: dbt Data Pipeline CI
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - test-ci-pipeline
+
+permissions:
+  contents: 'read'
+  id-token: 'write'
 
 jobs:
   dbt-test-and-build:
