@@ -18,7 +18,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dbt
-        run: pip install dbt-bigquery==1.13.0
+        run: pip install dbt-bigquery==1.12.1
 
       - name: Authenticate Google Cloud
         uses: google-github-actions/auth@v1
