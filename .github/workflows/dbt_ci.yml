@@ -37,6 +37,3 @@ jobs:
 
       - name: Run dbt build
         run: dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting
-
-      - name: Run dbt Build
-        run: dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting
