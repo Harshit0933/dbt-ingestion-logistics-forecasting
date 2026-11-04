@@ -3,7 +3,11 @@ name: dbt Data Pipeline CI
 on:
   push:
     branches:
-      - test-ci-pipeline
+      - main
+      - '**'  
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: 'read'
