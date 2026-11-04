@@ -1,9 +1,13 @@
 name: dbt Data Pipeline CI
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - test-ci-pipeline
+
+permissions:
+  contents: 'read'
+  id-token: 'write'
 
 jobs:
   dbt-test-and-build:
@@ -18,12 +22,21 @@ jobs:
           python-version: '3.11'
 
       - name: Install dbt
-        run: pip install dbt-bigquery==1.13.0
+        run: pip install dbt-bigquery==1.12.1
 
       - name: Authenticate Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: 'projects/101221995363/locations/global/workloadIdentityPools/github-actions-pool-v2/providers/github-provider-v2'
+          service_account: '101221995363-compute@developer.gserviceaccount.com'
+          project_id: 'data-warehouse-513514'
+          token_format: 'access_token'
+      
+      - name: Install dbt packages
+        run: dbt deps --project-dir logistics_forecasting
+
+      - name: Run dbt build
+        run: dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting
 
       - name: Run dbt Build
         run: dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting
