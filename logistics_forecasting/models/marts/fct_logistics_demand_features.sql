@@ -2,7 +2,8 @@
     materialized='incremental',
     incremental_strategy='insert_overwrite',
     partition_by={'field': 'target_date', 'data_type': 'date'},
-    cluster_by=['zone_id']
+    cluster_by=['zone_id'],
+    on_schema_change='sync_all_columns'
 ) }}
 
 WITH spine AS (
