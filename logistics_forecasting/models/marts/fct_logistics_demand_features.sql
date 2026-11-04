@@ -13,15 +13,13 @@ WITH spine AS (
     {% endif %}
 ),
 
--- 1. ADDED: Bring in zones to map zone_id to city_id for weather
 zones AS (
-    SELECT zone_id, city_id
+    SELECT zone_id, region
     FROM {{ ref('stg_raw__dim_zones') }}
 ),
 
 daily_transactions AS (
     SELECT
-        -- 2. FIXED: Convert UTC to Berlin timezone before extracting the date
         EXTRACT(DATE FROM order_timestamp_utc AT TIME ZONE 'Europe/Berlin') AS target_date,
         zone_id,
         COUNT(transaction_id) AS total_orders,
@@ -47,7 +45,6 @@ SELECT
     w.precipitation_mm,
     {{ rolling_avg_7d('t.total_orders', 's.zone_id', 's.target_date') }} AS rolling_7d_avg_orders
 FROM spine s
--- 3. FIXED: Join zones first, then join weather on city_id instead of zone_id
 LEFT JOIN zones z
     ON s.zone_id = z.zone_id
 LEFT JOIN daily_transactions t
@@ -55,4 +52,4 @@ LEFT JOIN daily_transactions t
     AND s.zone_id = t.zone_id
 LEFT JOIN weather w
     ON s.target_date = w.target_date 
-    AND z.city_id = w.city_id
+    AND z.region = w.region
