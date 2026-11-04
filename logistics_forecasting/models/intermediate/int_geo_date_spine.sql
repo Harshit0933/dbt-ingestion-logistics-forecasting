@@ -6,9 +6,9 @@
 
 WITH date_spine AS (
     {{ dbt_utils.date_spine(
-        datepart="day",
-        start_date="CAST('2023-01-01' AS DATE)",
-        end_date="CURRENT_DATE()"
+    datepart="day",
+    start_date="cast('2026-01-01' as date)", 
+    end_date="current_date()"
     ) }}
 ),
 
