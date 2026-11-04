@@ -54,6 +54,9 @@ unit_tests:
       - input: ref('stg_raw__weather_actuals')
         rows:
           - {target_date: '2023-10-01', zone_id: 'zone_A', temperature_celsius: 20, precipitation_mm: 0}
+      - input: ref('stg_raw__dim_zones')
+            rows:
+              - {zone_id: 'zone_1', city_id: 'city_1'}
     expect:
       rows:
         - {target_date: '2023-10-01', zone_id: 'zone_A', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, precipitation_mm: 0}
