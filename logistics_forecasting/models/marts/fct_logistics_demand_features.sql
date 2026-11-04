@@ -43,7 +43,8 @@ SELECT
     COALESCE(t.total_items_sold, 0) AS total_items_sold,
     w.temperature_celsius,
     w.precipitation_mm,
-    {{ rolling_avg_7d('t.total_orders', 's.zone_id', 's.target_date') }} AS rolling_7d_avg_orders
+    {{ rolling_avg_7d('t.total_orders', 's.zone_id', 's.target_date') }} AS rolling_7d_avg_orders,
+    {{ lag_7d('COALESCE(t.total_orders, 0)', 's.zone_id', 's.target_date') }} AS orders_lag_7d
 FROM spine s
 LEFT JOIN zones z
     ON s.zone_id = z.zone_id

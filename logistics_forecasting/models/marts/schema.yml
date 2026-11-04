@@ -59,4 +59,4 @@ unit_tests:
           - {zone_id: 'zone_1', region: 'Berlin'}
     expect:
       rows:
-        - {target_date: '2023-10-01', zone_id: 'zone_1', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, precipitation_mm: 0}
+        - {target_date: '2023-10-01', zone_id: 'zone_1', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, precipitation_mm: 0, orders_lag_7d: null}
