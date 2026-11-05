@@ -62,7 +62,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt']
+              arguments:
+                values: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt']
 
 unit_tests:
   - name: test_fct_demand_features_coalesces_nulls_to_zero
@@ -89,4 +90,3 @@ unit_tests:
     expect:
       rows:
         - {target_date: '2023-10-01', zone_id: 'zone_1', city: 'Berlin', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, rainfall_mm: 5, snowfall_cm: 0, orders_lag_7d: null}
-        

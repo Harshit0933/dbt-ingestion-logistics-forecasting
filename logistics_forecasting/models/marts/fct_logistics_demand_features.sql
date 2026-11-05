@@ -40,6 +40,7 @@ weather AS (
 SELECT
     s.target_date,
     s.zone_id,
+    z.region AS city,
     COALESCE(t.total_orders, 0) AS total_orders,
     COALESCE(t.total_items_sold, 0) AS total_items_sold,
     w.temperature_celsius,
