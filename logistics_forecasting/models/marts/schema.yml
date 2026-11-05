@@ -55,6 +55,14 @@ models:
               arguments:
                 min_value: 0
                 max_value: 500
+        
+      - name: city
+        description: "The German city where the delivery zone is located (e.g., Berlin, Munich, Hamburg)."
+        data_type: string
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt']
 
 unit_tests:
   - name: test_fct_demand_features_coalesces_nulls_to_zero
@@ -80,4 +88,5 @@ unit_tests:
           - {zone_id: 'zone_1', region: 'Berlin'}
     expect:
       rows:
-        - {target_date: '2023-10-01', zone_id: 'zone_1', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, rainfall_mm: 5, snowfall_cm: 0, orders_lag_7d: null}
+        - {target_date: '2023-10-01', zone_id: 'zone_1', city: 'Berlin', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, rainfall_mm: 5, snowfall_cm: 0, orders_lag_7d: null}
+        
