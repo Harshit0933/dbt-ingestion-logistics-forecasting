@@ -6,32 +6,50 @@ models:
     columns:
       - name: target_date
         description: "Continuous date spine (no gaps)."
+        data_type: date
         tests:
           - not_null
+          
       - name: zone_id
         description: "Delivery zone identifier."
+        data_type: string
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('stg_raw__dim_zones')
                 field: zone_id
+                
       - name: total_orders
         description: "Aggregated daily order volume. Coalesced to 0 for missing days."
+        data_type: int64
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
               arguments:
                 min_value: 0
+                
       - name: temperature_celsius
         description: "Daily average temperature. Contains nulls for zones/dates lacking sensor data."
+        data_type: numeric
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               arguments:
                 min_value: -30
                 max_value: 60
-      - name: precipitation_mm
-        description: "Daily rainfall in millimeters."
+                
+      - name: rainfall_mm
+        description: "The volume of liquid rain recorded on the target date, measured in millimeters (mm). This metric is only populated when the daily temperature is above 0°C; otherwise, it records as 0."
+        data_type: numeric
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 500
+                
+      - name: snowfall_cm
+        description: "The depth of solid snowfall recorded on the target date, measured in centimeters (cm). This metric is only populated when the daily temperature is 0°C or below; otherwise, it records as 0."
+        data_type: numeric
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               arguments:
