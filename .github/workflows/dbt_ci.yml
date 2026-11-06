@@ -12,10 +12,6 @@ permissions:
   contents: 'read'
   id-token: 'write'
 
-env:
-  DBT_PROFILES_DIR: ./logistics_forecasting
-  DBT_PROJECT_DIR: ./logistics_forecasting
-
 jobs:
   # ==========================================
   # JOB 1: VALIDATE & PLAN (Always Runs)
@@ -50,11 +46,11 @@ jobs:
       
       - name: Install dbt packages
         run: dbt deps
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: logistics_forecasting
 
       - name: Validate dbt Project (dbt parse)
-        run: dbt parse
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: dbt parse --profiles-dir .
+        working-directory: logistics_forecasting
 
       - name: Determine Run Strategy
         id: strategy
@@ -100,8 +96,8 @@ jobs:
       - name: Execute Incremental Build
         run: |
           dbt deps
-          dbt build
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+          dbt build --profiles-dir .
+        working-directory: logistics_forecasting
 
   # ==========================================
   # JOB 2B: FULL REFRESH BUILD
@@ -135,5 +131,5 @@ jobs:
       - name: Execute Full Refresh Build
         run: |
           dbt deps
-          dbt build --full-refresh
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+          dbt build --full-refresh --profiles-dir .
+        working-directory: logistics_forecasting
