@@ -16,7 +16,7 @@ WITH spine AS (
 
 zones AS (
     SELECT zone_id, region
-    FROM {{ ref('stg_raw__dim_zones') }}
+    FROM {{ ref('int_zones_historized') }}
 ),
 
 daily_transactions AS (
@@ -45,6 +45,7 @@ SELECT
     s.target_date,
     s.zone_id,
     z.region AS city,
+    z.population_density,
     COALESCE(t.total_orders, 0) AS total_orders,
     COALESCE(t.total_items_sold, 0) AS total_items_sold,
     w.temperature_celsius,
@@ -57,8 +58,11 @@ SELECT
     CASE WHEN h_tomorrow.day_before_holiday IS NOT NULL THEN 1 ELSE 0 END AS is_day_before_holiday,
     CASE WHEN h_yesterday.day_after_holiday IS NOT NULL THEN 1 ELSE 0 END AS is_day_after_holiday
 FROM spine s
-LEFT JOIN {{ ref('stg_raw__dim_zones') }} z 
+LEFT JOIN {{ ref('int_zones_historized') }} z 
     ON s.zone_id = z.zone_id
+    -- The core SCD2 point-in-time logic:
+    AND s.target_date >= z.valid_from_date
+    AND (s.target_date < z.valid_to_date OR z.valid_to_date IS NULL)
 LEFT JOIN daily_transactions t
     ON s.target_date = t.target_date
     AND s.zone_id = t.zone_id

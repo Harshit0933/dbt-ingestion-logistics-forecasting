@@ -65,6 +65,10 @@ models:
               arguments:
                 values: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt']
       
+      - name: population_density
+        description: "The population density of the delivery zone at the time the order was placed (tracked historically via SCD2)."
+        data_type: int64
+      
       - name: holiday_name
         description: "The German name of the public holiday, if applicable. Null on non-holidays."
         data_type: string
@@ -103,9 +107,9 @@ unit_tests:
           - {target_date: '2023-10-01', zone_id: 'zone_1'}
       - input: ref('stg_raw__transactions')
         rows: [] 
-      - input: ref('stg_raw__dim_zones')
+      - input: ref('int_zones_historized')
         rows:
-          - {zone_id: 'zone_1', region: 'Berlin'}
+          - {zone_id: 'zone_1', region: 'Berlin', population_density: 15000, valid_from_date: '2020-01-01', valid_to_date: null, dbt_scd_id: 'hash123'}
       - input: ref('stg_raw__weather_actuals')
         rows:
           - {target_date: '2023-10-01', region: 'Berlin', temperature_celsius: 20, rainfall_mm: 5, snowfall_cm: 0}

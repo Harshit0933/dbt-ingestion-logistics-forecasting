@@ -3,5 +3,8 @@
 SELECT
     zone_id,
     region,
-    CAST(population_density AS INT64) AS population_density
-FROM {{ source('raw_data', 'dim_zones') }}
+    population_density,
+    CAST(dbt_valid_from AS DATE) AS valid_from_date,
+    CAST(dbt_valid_to AS DATE) AS valid_to_date,
+    dbt_scd_id
+FROM {{ ref('snp_zones') }}
