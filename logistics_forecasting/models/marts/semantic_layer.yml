@@ -1,0 +1,60 @@
+version: 2
+
+semantic_models:
+  - name: logistics_demand_features
+    description: "Semantic model for logistics demand forecasting features."
+    model: ref('fct_logistics_demand_features')
+    defaults:
+      agg_time_dimension: target_date
+
+    entities:
+      - name: zone
+        type: primary
+        expr: zone_id
+
+    dimensions:
+      - name: target_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: city
+        type: categorical
+
+    measures:
+      - name: total_orders_measure
+        description: "The base aggregation for total orders."
+        agg: sum
+        expr: total_orders
+        
+      - name: total_items_sold_measure
+        description: "The base aggregation for total items sold."
+        agg: sum
+        expr: total_items_sold
+
+      - name: avg_temperature_measure
+        description: "The average daily temperature."
+        agg: average
+        expr: temperature_celsius
+
+metrics:
+  - name: total_orders
+    description: "Total logistics orders received."
+    type: simple
+    label: "Total Orders"
+    type_params:
+      measure: total_orders_measure
+
+  - name: total_items_sold
+    description: "Total individual items sold across all orders."
+    type: simple
+    label: "Total Items Sold"
+    type_params:
+      measure: total_items_sold_measure
+
+  - name: average_temperature
+    description: "Average temperature in Celsius."
+    type: simple
+    label: "Average Temperature"
+    type_params:
+      measure: avg_temperature_measure
+      
