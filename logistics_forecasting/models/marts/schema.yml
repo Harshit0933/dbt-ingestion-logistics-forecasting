@@ -64,13 +64,13 @@ models:
           - accepted_values:
               arguments:
                 values: ['Berlin', 'Hamburg', 'Munich', 'Cologne', 'Frankfurt']
-      - name: metricflow_time_spine
-        description: "Master time spine table required by the dbt Semantic Layer (MetricFlow)."
-        columns:
-          - name: date_day
-            data_type: date
-            tests:
-              - not_null
+  - name: metricflow_time_spine
+    description: "Master time spine table required by the dbt Semantic Layer (MetricFlow)."
+    columns:
+      - name: date_day
+        data_type: date
+        tests:
+          - not_null
 
 unit_tests:
   - name: test_fct_demand_features_coalesces_nulls_to_zero
@@ -91,9 +91,6 @@ unit_tests:
       - input: ref('stg_raw__weather_actuals')
         rows:
           - {target_date: '2023-10-01', region: 'Berlin', temperature_celsius: 20, rainfall_mm: 5, snowfall_cm: 0}
-      - input: ref('stg_raw__dim_zones')
-        rows:
-          - {zone_id: 'zone_1', region: 'Berlin'}
     expect:
       rows:
         - {target_date: '2023-10-01', zone_id: 'zone_1', city: 'Berlin', total_orders: 0, total_items_sold: 0, temperature_celsius: 20, rainfall_mm: 5, snowfall_cm: 0, orders_lag_7d: null}

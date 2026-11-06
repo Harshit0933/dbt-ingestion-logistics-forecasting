@@ -13,8 +13,66 @@ permissions:
   id-token: 'write'
 
 jobs:
-  dbt-test-and-build:
+  # ==========================================
+  # JOB 1: VALIDATE & PLAN (Always Runs)
+  # ==========================================
+  validate_and_plan:
+    name: 1. Validate & Plan Strategy
     runs-on: ubuntu-latest
+    outputs:
+      run_strategy: ${{ steps.strategy.outputs.run_type }}
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required to fetch full git history for the diff comparison
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-bigquery==1.12.1
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: 'projects/101221995363/locations/global/workloadIdentityPools/github-actions-pool-v2/providers/github-provider-v2'
+          service_account: '101221995363-compute@developer.gserviceaccount.com'
+          project_id: 'data-warehouse-513514'
+          token_format: 'access_token'
+      
+      - name: Install dbt packages
+        run: dbt deps
+        working-directory: logistics_forecasting
+
+      - name: Validate dbt Project (dbt parse)
+        run: dbt parse --profiles-dir .
+        working-directory: logistics_forecasting
+
+      - name: Determine Run Strategy
+        id: strategy
+        run: |
+          git fetch origin main
+          if git diff --name-only origin/main...HEAD | grep -q "models/marts/"; then
+            echo "New feature detected in marts. Triggering full historical backfill..."
+            echo "run_type=full" >> $GITHUB_OUTPUT
+          else
+            echo "No structural changes. Running standard daily incremental build..."
+            echo "run_type=incremental" >> $GITHUB_OUTPUT
+          fi
+
+  # ==========================================
+  # JOB 2A: INCREMENTAL BUILD
+  # ==========================================
+  build_incremental:
+    name: 2A. Incremental Data Build
+    needs: validate_and_plan
+    if: needs.validate_and_plan.outputs.run_strategy == 'incremental'
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -34,20 +92,44 @@ jobs:
           service_account: '101221995363-compute@developer.gserviceaccount.com'
           project_id: 'data-warehouse-513514'
           token_format: 'access_token'
-      
-      - name: Install dbt packages
-        run: dbt deps --project-dir logistics_forecasting
 
-      - name: Run dbt Data Pipeline
+      - name: Execute Incremental Build
         run: |
-          # 1. Fetch the main branch to compare changes
-          git fetch origin main
-          
-          # 2. Check if any file in the marts folder was modified
-          if git diff --name-only origin/main...HEAD | grep -q "models/marts/"; then
-            echo "New feature detected in marts. Triggering full historical backfill..."
-            dbt build --full-refresh --project-dir logistics_forecasting --profiles-dir logistics_forecasting
-          else
-            echo "No structural changes. Running standard daily incremental build..."
-            dbt build --project-dir logistics_forecasting --profiles-dir logistics_forecasting
-          fi
+          dbt deps
+          dbt build --profiles-dir .
+        working-directory: logistics_forecasting
+
+  # ==========================================
+  # JOB 2B: FULL REFRESH BUILD
+  # ==========================================
+  build_full_refresh:
+    name: 2B. Full History Backfill
+    needs: validate_and_plan
+    if: needs.validate_and_plan.outputs.run_strategy == 'full'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-bigquery==1.12.1
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: 'projects/101221995363/locations/global/workloadIdentityPools/github-actions-pool-v2/providers/github-provider-v2'
+          service_account: '101221995363-compute@developer.gserviceaccount.com'
+          project_id: 'data-warehouse-513514'
+          token_format: 'access_token'
+
+      - name: Execute Full Refresh Build
+        run: |
+          dbt deps
+          dbt build --full-refresh --profiles-dir .
+        working-directory: logistics_forecasting
