@@ -35,7 +35,7 @@ daily_transactions AS (
 weather AS (
     SELECT *
     FROM {{ ref('stg_raw__weather_actuals') }}
-)
+),
 
 holidays AS (
     SELECT * FROM {{ ref('int_city_holidays_expanded') }}
