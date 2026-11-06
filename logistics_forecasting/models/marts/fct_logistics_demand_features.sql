@@ -35,6 +35,10 @@ daily_transactions AS (
 weather AS (
     SELECT *
     FROM {{ ref('stg_raw__weather_actuals') }}
+),
+
+holidays AS (
+    SELECT * FROM {{ ref('int_city_holidays_expanded') }}
 )
 
 SELECT
@@ -47,7 +51,11 @@ SELECT
     w.rainfall_mm,
     w.snowfall_cm,
     {{ rolling_avg_7d('t.total_orders', 's.zone_id', 's.target_date') }} AS rolling_7d_avg_orders,
-    {{ lag_7d('COALESCE(t.total_orders, 0)', 's.zone_id', 's.target_date') }} AS orders_lag_7d
+    {{ lag_7d('COALESCE(t.total_orders, 0)', 's.zone_id', 's.target_date') }} AS orders_lag_7d,
+    h_today.holiday_name,
+    CASE WHEN h_today.holiday_date IS NOT NULL THEN 1 ELSE 0 END AS is_holiday,
+    CASE WHEN h_tomorrow.day_before_holiday IS NOT NULL THEN 1 ELSE 0 END AS is_day_before_holiday,
+    CASE WHEN h_yesterday.day_after_holiday IS NOT NULL THEN 1 ELSE 0 END AS is_day_after_holiday
 FROM spine s
 LEFT JOIN {{ ref('stg_raw__dim_zones') }} z 
     ON s.zone_id = z.zone_id
@@ -57,3 +65,12 @@ LEFT JOIN daily_transactions t
 LEFT JOIN weather w
     ON s.target_date = w.target_date 
     AND z.region = w.region
+LEFT JOIN holidays h_today
+    ON s.target_date = h_today.holiday_date
+    AND z.region = h_today.city
+LEFT JOIN holidays h_tomorrow
+    ON s.target_date = h_tomorrow.day_before_holiday
+    AND z.region = h_tomorrow.city
+LEFT JOIN holidays h_yesterday
+    ON s.target_date = h_yesterday.day_after_holiday
+    AND z.region = h_yesterday.city

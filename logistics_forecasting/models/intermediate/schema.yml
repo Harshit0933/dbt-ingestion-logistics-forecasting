@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: int_city_holidays_expanded
+    description: "Expands the public holidays seed by calculating the day before and day after for each city to avoid complex time-shifting in the final fact table."
+    columns:
+      - name: city
+        description: "The German city."
+        data_type: string
+        tests:
+          - not_null
+      - name: holiday_name
+        description: "The name of the holiday (e.g., Neujahr)."
+        data_type: string
+      - name: holiday_date
+        description: "The actual date of the public holiday."
+        data_type: date
+        tests:
+          - not_null
+      - name: day_before_holiday
+        description: "One day prior to the holiday."
+        data_type: date
+      - name: day_after_holiday
+        description: "One day following the holiday."
+        data_type: date
+
+  - name: int_geo_date_spine
+    description: "Cross-join of all delivery zones and target dates to ensure a continuous, gapless time series for forecasting."
+    columns:
+      - name: target_date
+        description: "Continuous date generated for the spine."
+        data_type: date
+        tests:
+          - not_null
+      - name: zone_id
+        description: "Delivery zone identifier."
+        data_type: string
+        tests:
+          - not_null
