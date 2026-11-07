@@ -92,4 +92,4 @@ Navigate to `http://localhost:8080` to monitor task execution.
 
 ## 🛡️ Git & CI/CD Workflow
 
-The `main` branch is strictly protected. All data modeling changes (such as the recent `add-SDA-2-on-population` branch) must be introduced via a Pull Request (PR) and pass status checks before merging.
+The `main` branch is strictly protected. All data modeling changes must be introduced via a Pull Request (PR) and pass status checks before merging.
