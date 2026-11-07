@@ -1,14 +1,18 @@
+import os
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 
-# Paths pointing to your WSL dbt setup
-DBT_PROJECT_DIR = "/home/harshitn/dbt-logistics-forecasting/logistics_forecasting"
-PROFILES_DIR = "." 
-
-# Crucial: This points to the dbt binary in your original Python 3.14 venv
-DBT_EXEC = "/home/harshitn/dbt-logistics-forecasting/venv/bin/dbt"
-
+# Read from environment variables if they exist; otherwise, fall back to your local WSL paths
+DBT_PROJECT_DIR = os.environ.get(
+    "DBT_PROJECT_DIR", 
+    "/home/harshitn/dbt-logistics-forecasting/logistics_forecasting"
+)
+DBT_EXEC = os.environ.get(
+    "DBT_EXEC", 
+    "/home/harshitn/dbt-logistics-forecasting/venv/bin/dbt"
+)
+PROFILES_DIR = "."
 default_args = {
     'owner': 'data_engineering',
     'depends_on_past': False,
