@@ -14,39 +14,35 @@ PROJECT_ID = "data-warehouse-513514"
 DATASET_ID = "dbt_forecast_dev_us"
 db = SQLDatabase.from_uri(f"bigquery://{PROJECT_ID}/{DATASET_ID}")
 
-# 3. Initialize the LLM (Using Flash in the European region)
+# 3. Initialize the LLM
 llm = ChatGroq(
     temperature=0,
     model_name="openai/gpt-oss-120b"
 )
 
-# 3. Create the Agent
-agent_executor = create_sql_agent(llm, db=db, agent_type="tool-calling", verbose=True)
+# 4. Create the Agent (verbose=False keeps the Airflow logs clean)
+agent_executor = create_sql_agent(llm, db=db, agent_type="tool-calling", verbose=False)
 
-# 4. Interactive Chat Interface
-print("\n" + "="*55)
-print("🤖 Welcome to the Autonomous Logistics Data Analyst!")
-print("Ask any question about your BigQuery data.")
-print("Type 'exit' or 'quit' to stop.")
-print("="*55)
+print("🤖 Starting Autonomous AI Analyst (Airflow Mode)...")
 
-while True:
-    # Prompt the user for a command
-    user_query = input("\nYour question:\n> ")
+# 5. Define the automated task you want to run after every dbt build
+automated_task = """
+Check the latest logistics demand features. 
+Identify the top 3 zones with the highest total orders and calculate their demand-per-population ratio.
+"""
+
+strict_prompt = (
+    f"{automated_task}\n\n"
+    "CRITICAL INSTRUCTION: In your final answer, you MUST include the exact SQL query "
+    "you used to find the answer, formatted inside a Markdown code block."
+)
+
+# 6. Execute the agent autonomously
+try:
+    response = agent_executor.invoke({"input": strict_prompt})
+    print("\n--- AI DAILY INSIGHTS ---")
+    print(response["output"])
+    print("\n✅ Autonomous Analysis Complete.")
+except Exception as e:
+    print(f"\n[Error]: The agent encountered an issue: {e}")
     
-    # Graceful exit
-    if user_query.lower() in ['exit', 'quit']:
-        print("Closing the AI assistant. Goodbye!")
-        break
-        
-    # Ignore empty inputs
-    if not user_query.strip():
-        continue
-
-    # Execute the agent
-    try:
-        response = agent_executor.invoke({"input": user_query})
-        print("\n--- AI RESPONSE ---")
-        print(response["output"])
-    except Exception as e:
-        print(f"\n[Error]: The agent encountered an issue: {e}")
