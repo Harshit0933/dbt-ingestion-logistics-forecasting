@@ -49,6 +49,12 @@ with DAG(
         bash_command=f"cd {DBT_PROJECT_DIR} && {DBT_EXEC} build --profiles-dir {PROFILES_DIR}"
     )
 
+    # NEW Step: Save the production state for Slim CI
+    dbt_save_state = BashOperator(
+        task_id='dbt_save_state',
+        bash_command=f"cp {DBT_PROJECT_DIR}/target/manifest.json {DBT_PROJECT_DIR}/prod-state/manifest.json"
+    )
+
     # Step 4: Run the Autonomous AI Analyst
     # Securely fetches the key from Airflow Variables, falling back to a placeholder if not set
     run_ai_analyst = BashOperator(
@@ -61,4 +67,4 @@ with DAG(
     )
 
     # Define execution order
-    dbt_deps >> dbt_snapshot >> dbt_build >> run_ai_analyst
+    dbt_deps >> dbt_snapshot >> dbt_build >> dbt_save_state >> run_ai_analyst   
